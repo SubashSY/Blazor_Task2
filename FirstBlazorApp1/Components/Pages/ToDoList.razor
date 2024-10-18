@@ -1,0 +1,77 @@
+﻿@page "/todolist"
+@using Microsoft.AspNetCore.Authorization
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+<h3>To-Do List</h3>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-floating mb-3">
+        <InputText @bind-Value="newTodo" class="form-control" placeholder="Enter a new to-do item" />
+        <label for="todo">To-Do Item</label>
+        </div>
+    </div>
+        <div class="col-md-4">
+            <button class="btn btn-primary" @onclick="AddTodo">Add</button>
+         </div>
+</div>
+    <AuthorizeView Roles="Admin">
+
+@if (todos.Count == 0)
+{
+    <p>No to-do items available.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Completed</th>
+                <th>Task</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var todo in todos)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" @bind="todo.IsCompleted" />
+                    </td>
+                    <td style="text-decoration: @(todo.IsCompleted ? "line-through" : "none")">
+                        @todo.Task
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="() => DeleteTodo(todo)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+</AuthorizeView>
+@code {
+    private string newTodo = string.Empty;
+    private List<TodoItem> todos = new List<TodoItem>();
+
+    public class TodoItem
+    {
+        public string Task { get; set; }
+        public bool IsCompleted { get; set; }
+    }
+
+    private void AddTodo()
+    {
+        if (!string.IsNullOrWhiteSpace(newTodo))
+        {
+            todos.Add(new TodoItem { Task = newTodo });
+            newTodo = string.Empty; // Clear the input field after adding
+        }
+    }
+
+    private void DeleteTodo(TodoItem todo)
+    {
+        todos.Remove(todo);
+    }
+}
